@@ -6,10 +6,7 @@ using UnityEngine;
 public class AgentEditor : Editor
 {
     static Agent sLastSelectedAgent;
-    static Agent sOtherAgent;
-
     static Agent[] sOtherAgents;
-
 
     static float sRange;
 
@@ -28,11 +25,14 @@ public class AgentEditor : Editor
 
         if (GUILayout.Button("Find Closest"))
         {
-            if (sOtherAgent != null)
-                sOtherAgent.RemoveHighlight();
+            if (sOtherAgents != null)
+                Array.ForEach(sOtherAgents, a => a.RemoveHighlight());
             var other = Playground.Instance.FindClosetsAgentTo(sLastSelectedAgent);
-            other.Highlight(Color.red);
-            sOtherAgent = other;
+            other.Highlight(Color.yellow);
+            if (sOtherAgents == null)
+                sOtherAgents = new Agent[] { other };
+            else
+                sOtherAgents[0] = other;
         }
 
         sRange = EditorGUILayout.FloatField(sRange);

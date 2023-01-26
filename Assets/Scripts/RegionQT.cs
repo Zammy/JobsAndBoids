@@ -133,6 +133,31 @@ public class RegionQT<T> where T : MonoBehaviour
         return _results.ToArray();
     }
 
+    public T FindClosest(T to)
+    {
+        _results.Clear();
+
+        var pos = to.GetPos();
+        FindObjsInRegion(_root, pos, 20f, 400f);
+
+        T closetsObj = default(T);
+        float closetsDistance = float.MaxValue;
+        for (int i = 0; i < _results.Count; i++)
+        {
+            var obj = _results[i];
+            if (obj == to)
+                continue;
+            var otherPos = obj.GetPos();
+            var sqrDst = Vector2.SqrMagnitude(pos - otherPos);
+            if (sqrDst < closetsDistance)
+            {
+                closetsDistance = sqrDst;
+                closetsObj = obj;
+            }
+        }
+        return closetsObj;
+    }
+
     void FindObjsInRegion(Node<T> node, Vector2 pos, float distance, float sqrDistance)
     {
         if (node.Bucket[0] != null)

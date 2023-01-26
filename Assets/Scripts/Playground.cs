@@ -21,6 +21,7 @@ public class Playground : Monotone<Playground>
 
     void Update()
     {
+        _qt.Build(_agents);
     }
 
     public void GenerateAgents()
@@ -40,9 +41,7 @@ public class Playground : Monotone<Playground>
 
     public Agent FindClosetsAgentTo(Agent agent)
     {
-
-
-        return null;
+        return _qt.FindClosest(agent);
     }
 
     public Agent[] FindInRegion(Agent agent, float radius)
