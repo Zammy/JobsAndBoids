@@ -42,7 +42,6 @@ public class AgentEditor : Editor
             if (sOtherAgents != null)
                 Array.ForEach(sOtherAgents, a => a.RemoveHighlight());
 
-            Debug.Log(sRange);
             sOtherAgents = Playground.Instance.FindInRegion(sLastSelectedAgent, sRange);
             Array.ForEach(sOtherAgents, a => a.Highlight(Color.yellow));
         }

@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class RegionQT<T> where T : MonoBehaviour
 {
-    const int BUCKETSIZE = 4;
+    const int BUCKETSIZE = 8;
 
-    class Node<U> where U : MonoBehaviour
+    private class Node<U> where U : MonoBehaviour
     {
         public Node<U> NW;
         public Node<U> NE;
@@ -17,11 +16,18 @@ public class RegionQT<T> where T : MonoBehaviour
         public Vector2 Point;
         public U[] Bucket;
 
-        public Node() { }
-
-        public Node(List<U> objs)
+        public Node()
         {
-            Bucket = objs.ToArray();
+            Bucket = new U[BUCKETSIZE];
+        }
+
+        internal Node<U> Fill(List<U> objs)
+        {
+            for (int i = 0; i < objs.Count && i < BUCKETSIZE; i++)
+            {
+                Bucket[i] = objs[i];
+            }
+            return this;
         }
     }
 
@@ -37,17 +43,22 @@ public class RegionQT<T> where T : MonoBehaviour
 
     public RegionQT()
     {
-        //_sw = new List<T>();
-        //_nw = new List<T>();
-        //_se = new List<T>();
-        //_ne = new List<T>();
         _results = new List<T>();
+        _pointsToCheck = new Vector2[]
+        {
+            Vector2.zero,
+            Vector2.zero,
+            Vector2.zero,
+            Vector2.zero
+        };
+        _nodePool = new Stack<Node<T>>();
+        _listPool = new Stack<List<T>>();
     }
 
     public void Build(List<T> agents)
     {
-        //TODO: recycle nodes
-
+        if (_root != null)
+            RecycleNode(_root);
         _root = CreateNode(agents);
     }
 
@@ -55,22 +66,23 @@ public class RegionQT<T> where T : MonoBehaviour
     {
         if (agents.Count <= BUCKETSIZE)
         {
-            return new Node<T>(agents); //nodes can be reused from a pool
+            return GetEmptyNode().Fill(agents);
         }
 
-        Vector2 midPoint;
-        midPoint.x = agents.Aggregate(0f, (agg, agent) => agg + agent.transform.position.x); //can be in for loop
-        midPoint.y = agents.Aggregate(0f, (agg, agent) => agg + agent.transform.position.z);
+        Vector2 midPoint = Vector2.zero;
+        for (int i = 0; i < agents.Count; i++)
+        {
+            Vector2 pos = agents[i].GetPos();
+            midPoint.x += pos.x;
+            midPoint.y += pos.y;
+        }
         midPoint.x /= agents.Count;
         midPoint.y /= agents.Count;
 
-        var node = new Node<T>();
-        node.Point = midPoint;
-
-        var _sw = new List<T>();
-        var _nw = new List<T>();
-        var _se = new List<T>();
-        var _ne = new List<T>();
+        var sw = GetEmptyList();
+        var nw = GetEmptyList();
+        var se = GetEmptyList();
+        var ne = GetEmptyList();
 
         for (int i = 0; i < agents.Count; i++)
         {
@@ -79,31 +91,38 @@ public class RegionQT<T> where T : MonoBehaviour
             if (pos.x > midPoint.x)
             {
                 if (pos.z > midPoint.y)
-                    _ne.Add(agent);
+                    ne.Add(agent);
                 else
-                    _se.Add(agent);
+                    se.Add(agent);
             }
             else
             {
                 if (pos.z > midPoint.y)
-                    _nw.Add(agent);
+                    nw.Add(agent);
                 else
-                    _sw.Add(agent);
+                    sw.Add(agent);
             }
         }
 
-        if (_nw.Count > 0)
-            node.NW = CreateNode(_nw);
-        if (_ne.Count > 0)
-            node.NE = CreateNode(_ne);
-        if (_sw.Count > 0)
-            node.SW = CreateNode(_sw);
-        if (_se.Count > 0)
-            node.SE = CreateNode(_se);
+        var node = GetEmptyNode();
+        node.Point = midPoint;
+
+        if (nw.Count > 0)
+            node.NW = CreateNode(nw);
+        if (ne.Count > 0)
+            node.NE = CreateNode(ne);
+        if (sw.Count > 0)
+            node.SW = CreateNode(sw);
+        if (se.Count > 0)
+            node.SE = CreateNode(se);
+
+        RecycleList(nw);
+        RecycleList(ne);
+        RecycleList(sw);
+        RecycleList(se);
 
         return node;
     }
-
 
     public T[] AllInRegion(Vector2 pos, float radius)
     {
@@ -116,10 +135,12 @@ public class RegionQT<T> where T : MonoBehaviour
 
     void FindObjsInRegion(Node<T> node, Vector2 pos, float distance, float sqrDistance)
     {
-        if (node.Bucket != null)
+        if (node.Bucket[0] != null)
         {
             for (int i = 0; i < node.Bucket.Length; i++)
             {
+                if (node.Bucket[i] == null)
+                    break;
                 var dist = Vector2.SqrMagnitude(pos - node.Bucket[i].GetPos());
                 if (dist < sqrDistance)
                     _results.Add(node.Bucket[i]);
@@ -127,18 +148,18 @@ public class RegionQT<T> where T : MonoBehaviour
             return;
         }
 
-        Direction directions = Direction.None;
-        var pointsToCheck = new Vector2[]
+        var directions = Direction.None;
+        _pointsToCheck[0].x = pos.x + distance;
+        _pointsToCheck[0].y = pos.y + distance;
+        _pointsToCheck[1].x = pos.x + distance;
+        _pointsToCheck[1].y = pos.y - distance;
+        _pointsToCheck[2].x = pos.x - distance;
+        _pointsToCheck[2].y = pos.y - distance;
+        _pointsToCheck[3].x = pos.x - distance;
+        _pointsToCheck[3].y = pos.y + distance;
+        for (int i = 0; i < _pointsToCheck.Length; i++)
         {
-            new Vector2(pos.x + distance, pos.y+distance),
-            new Vector2(pos.x + distance, pos.y-distance),
-            new Vector2(pos.x - distance, pos.y-distance),
-            new Vector2(pos.x - distance, pos.y+distance),
-        };
-
-        for (int i = 0; i < pointsToCheck.Length; i++)
-        {
-            var point = pointsToCheck[i];
+            var point = _pointsToCheck[i];
             if (point.x > node.Point.x)
             {
                 if (point.y > node.Point.y)
@@ -165,9 +186,55 @@ public class RegionQT<T> where T : MonoBehaviour
             FindObjsInRegion(node.NW, pos, distance, sqrDistance);
     }
 
+    Node<T> GetEmptyNode()
+    {
+        if (_nodePool.Count > 0)
+            return _nodePool.Pop();
+        return new Node<T>();
+    }
+
+    void RecycleNode(Node<T> node)
+    {
+        for (int i = 0; i < BUCKETSIZE; i++)
+            node.Bucket[i] = null;
+
+        if (node.NW != null)
+            RecycleNode(node.NW);
+        if (node.NE != null)
+            RecycleNode(node.NE);
+        if (node.SE != null)
+            RecycleNode(node.SE);
+        if (node.SW != null)
+            RecycleNode(node.SW);
+
+        node.NW = null;
+        node.NE = null;
+        node.SE = null;
+        node.SW = null;
+
+        _nodePool.Push(node);
+    }
+
+    List<T> GetEmptyList()
+    {
+        if (_listPool.Count > 0)
+            return _listPool.Pop();
+        return new List<T>(8);
+    }
+
+    void RecycleList(List<T> list)
+    {
+        list.Clear();
+        _listPool.Push(list);
+    }
+
     Node<T> _root;
 
+    //caches
     List<T> _results;
+    Vector2[] _pointsToCheck;
+    Stack<Node<T>> _nodePool;
+    Stack<List<T>> _listPool;
 }
 
 public static class MonoBehaviourExt
