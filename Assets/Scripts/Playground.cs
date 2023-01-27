@@ -34,6 +34,7 @@ public class Playground : Monotone<Playground>
             var pos = new Vector3(Random.Range(-Size.x, Size.x), 0f, Random.Range(-Size.y, Size.y));
             var newAgentGo = Instantiate(AgentPrefab, pos, Quaternion.identity, transform);
             var newAgent = newAgentGo.GetComponent<Agent>();
+            newAgent.transform.localRotation = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.up);
             _agents.Add(newAgent);
         }
         _qt.Build(_agents);
@@ -52,15 +53,6 @@ public class Playground : Monotone<Playground>
     void OnDrawGizmos()
     {
         Gizmos.DrawWireCube(transform.position, new Vector3(Size.x * 2, 0.01f, Size.y * 2));
-
-        //if (_agentsSortedX == null)
-        //    return;
-
-        //for (int i = 0; i < _agentsSortedX.Count; i++)
-        //{
-        //    var agent = _agentsSortedX[i];
-        //    Handles.Label(agent.transform.position, i.ToString());
-        //}
     }
 
     List<Agent> _agents;

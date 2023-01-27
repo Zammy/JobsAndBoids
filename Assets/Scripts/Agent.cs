@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Agent : MonoBehaviour
@@ -19,23 +17,48 @@ public class Agent : MonoBehaviour
 
     void Update()
     {
+        ReflectMovementOnPlaygroundBounds();
 
-        // var steeringDirection = transform.forward;
-        // //TODO: steering direction should come from somewhere
-        // var steeringForce = steeringDirection * MaxForce;
-        // var acceleration = steeringForce / Mass;
-        // var velocity = Vector3.ClampMagnitude(Velocity + acceleration, MaxSpeed);
-        // transform.position += velocity * Time.deltaTime;
+        //TODO: steering direction should come from somewhere
+        var steeringDirection = transform.forward;
+        var steeringForce = steeringDirection * MaxForce;
+        var acceleration = steeringForce / Mass;
+        var velocity = Vector3.ClampMagnitude(Velocity + acceleration, MaxSpeed);
+        transform.position += velocity * Time.deltaTime;
+    }
+
+    void ReflectMovementOnPlaygroundBounds()
+    {
+        var playgroundBounds = Playground.Instance.Size;
+        var pos = this.GetPos();
+        if (pos.x > playgroundBounds.x && Vector3.Dot(transform.forward, Vector3.left) < 0)
+        {
+            transform.forward = Vector3.Reflect(transform.forward, Vector3.left);
+        }
+        if (pos.x < -playgroundBounds.x && Vector3.Dot(transform.forward, Vector3.right) < 0)
+        {
+            transform.forward = Vector3.Reflect(transform.forward, Vector3.right);
+        }
+        if (pos.y > playgroundBounds.y && Vector3.Dot(transform.forward, Vector3.back) < 0)
+        {
+            transform.forward = Vector3.Reflect(transform.forward, Vector3.back);
+        }
+        if (pos.y < -playgroundBounds.y && Vector3.Dot(transform.forward, Vector3.forward) < 0)
+        {
+            transform.forward = Vector3.Reflect(transform.forward, Vector3.forward);
+        }
     }
 
     public void Highlight(Color color)
     {
-        _renderer.color = color;
+        if (_renderer)
+            _renderer.color = color;
     }
 
     public void RemoveHighlight()
     {
-        _renderer.color = Color.white;
+        if (_renderer)
+            _renderer.color = Color.white;
     }
 
     SpriteRenderer _renderer;

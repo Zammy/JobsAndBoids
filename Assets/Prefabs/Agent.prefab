@@ -46,8 +46,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Mass: 1
-  MaxForce: 10
-  MaxSpeed: 50
+  MaxForce: 15
+  MaxSpeed: 250
   Velocity: {x: 0, y: 0, z: 0}
 --- !u!1 &6670047692195410158
 GameObject:
