@@ -152,9 +152,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f7154850559cbc46adb0c7f4ae676dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SpawnNum: 200
+  SpawnNum: 500
   Size: {x: 50, y: 50}
   AgentPrefab: {fileID: 6670047691384889906, guid: 4ac2be5eca6ed024288e176a5a2b5782, type: 3}
+  AgentSettings:
+    Speed: 10
+    RotationCoefficient: 0.25
+    NeighbourhoodRange: 15
+    ForwardWeight: 3
+    RepulsionWeight: 0.8
+    CohesionWeight: 0.5
+    AlignmentWeight: 0.2
+    ContainmentWeight: 1
 --- !u!4 &298184209
 Transform:
   m_ObjectHideFlags: 0
@@ -317,7 +326,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 55
+  orthographic size: 60
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2

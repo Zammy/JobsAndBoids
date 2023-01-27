@@ -13,5 +13,9 @@ public class FactoryEditor : Editor
         {
             playground.GenerateAgents();
         }
+        if (GUILayout.Button("Randomize Pos"))
+        {
+            playground.RandomizePositionsOfAgents();
+        }
     }
 }

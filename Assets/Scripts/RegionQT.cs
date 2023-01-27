@@ -133,6 +133,16 @@ public class RegionQT<T> where T : MonoBehaviour
         return _results.ToArray();
     }
 
+    public List<T> QueryAgentNeighbourhood(T obj, float range)
+    {
+        _results.Clear();
+
+        _excludeObj = obj;
+        FindObjsInRegion(_root, obj.GetPos(), range, range * range);
+
+        return _results;
+    }
+
     public T FindClosest(T to)
     {
         _results.Clear();
@@ -166,6 +176,8 @@ public class RegionQT<T> where T : MonoBehaviour
             {
                 if (node.Bucket[i] == null)
                     break;
+                if (node.Bucket[i] == _excludeObj)
+                    continue;
                 var dist = Vector2.SqrMagnitude(pos - node.Bucket[i].GetPos());
                 if (dist < sqrDistance)
                     _results.Add(node.Bucket[i]);
@@ -254,6 +266,8 @@ public class RegionQT<T> where T : MonoBehaviour
     }
 
     Node<T> _root;
+
+    T _excludeObj;
 
     //caches
     List<T> _results;
