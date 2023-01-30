@@ -154,16 +154,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SpawnNum: 500
   Size: {x: 50, y: 50}
+  RandomLeadership: 0
+  LeadersPer100: 5
   AgentPrefab: {fileID: 6670047691384889906, guid: 4ac2be5eca6ed024288e176a5a2b5782, type: 3}
   AgentSettings:
     Speed: 10
-    RotationCoefficient: 0.25
+    RotationCoefficient: 0.3
     NeighbourhoodRange: 15
     ForwardWeight: 3
-    RepulsionWeight: 0.8
+    RepulsionWeight: 1.25
     CohesionWeight: 0.5
-    AlignmentWeight: 0.2
-    ContainmentWeight: 1
+    AlignmentWeight: 0.5
+    ContainmentWeight: 2
 --- !u!4 &298184209
 Transform:
   m_ObjectHideFlags: 0

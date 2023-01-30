@@ -5,6 +5,8 @@ public class Playground : Monotone<Playground>
 {
     public int SpawnNum = 100;
     public Vector2 Size;
+    public bool RandomLeadership = true;
+    public int LeadersPer100 = 0;
     public GameObject AgentPrefab;
 
     public Agent.Settings AgentSettings;
@@ -40,7 +42,18 @@ public class Playground : Monotone<Playground>
             var pos = new Vector3(Random.Range(-Size.x, Size.x), 0f, Random.Range(-Size.y, Size.y));
             var newAgentGo = Instantiate(AgentPrefab, pos, Quaternion.identity, transform);
             var newAgent = newAgentGo.GetComponent<Agent>();
-            newAgent.Leadership = Random.Range(0f, 1f);
+            if (RandomLeadership)
+            {
+                newAgent.Leadership = Random.Range(0f, 1f);
+            }
+            else if ((i % 100) < LeadersPer100)
+            {
+                newAgent.Leadership = Random.Range(.9f, 1f);
+            }
+            else
+            {
+                newAgent.Leadership = Random.Range(0f, .3f);
+            }
             newAgent.transform.localRotation = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.up);
             _agents.Add(newAgent);
         }
@@ -54,16 +67,6 @@ public class Playground : Monotone<Playground>
             agent.transform.position = new Vector3(Random.Range(-Size.x, Size.x), 0f, Random.Range(-Size.y, Size.y));
             agent.transform.localRotation = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.up);
         }
-    }
-
-    public Agent FindClosetsAgentTo(Agent agent)
-    {
-        return _qt.FindClosest(agent);
-    }
-
-    public Agent[] FindInRegion(Agent agent, float radius)
-    {
-        return _qt.AllInRegion(agent.GetPos(), radius);
     }
 
     public List<Agent> QueryAgentNeighbourhood(Agent agent)
