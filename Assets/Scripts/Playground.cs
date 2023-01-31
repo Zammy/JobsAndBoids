@@ -6,30 +6,25 @@ public class Playground : Monotone<Playground>
     public int SpawnNum = 100;
     public Vector2 Size;
     public bool RandomLeadership = true;
-    public int LeadersPer100 = 0;
+    public int LeadersPer100 = 1;
     public GameObject AgentPrefab;
 
     public Agent.Settings AgentSettings;
 
-    protected override void Awake()
-    {
-        base.Awake();
-    }
-
     private void Start()
     {
         _agents = new List<Agent>(SpawnNum);
-        _qt = new RegionQT<Agent>();
         GenerateAgents();
     }
 
     void Update()
     {
-        _qt.Build(_agents);
-        for (int i = 0; i < _agents.Count; i++)
-        {
-            _agents[i].Tick();
-        }
+        AgentsJobified.Tick(Time.deltaTime);
+    }
+
+    void LateUpdate()
+    {
+        AgentsJobified.LateTick();
     }
 
     public void GenerateAgents()
@@ -41,6 +36,7 @@ public class Playground : Monotone<Playground>
         {
             var pos = new Vector3(Random.Range(-Size.x, Size.x), 0f, Random.Range(-Size.y, Size.y));
             var newAgentGo = Instantiate(AgentPrefab, pos, Quaternion.identity, transform);
+
             var newAgent = newAgentGo.GetComponent<Agent>();
             if (RandomLeadership)
             {
@@ -55,7 +51,10 @@ public class Playground : Monotone<Playground>
                 newAgent.Leadership = Random.Range(0f, .3f);
             }
             newAgent.transform.localRotation = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.up);
+
             _agents.Add(newAgent);
+
+            AgentsJobified.NewAgentSpawned(newAgent);
         }
     }
 
@@ -67,11 +66,6 @@ public class Playground : Monotone<Playground>
             agent.transform.position = new Vector3(Random.Range(-Size.x, Size.x), 0f, Random.Range(-Size.y, Size.y));
             agent.transform.localRotation = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.up);
         }
-    }
-
-    public List<Agent> QueryAgentNeighbourhood(Agent agent)
-    {
-        return _qt.QueryAgentNeighbourhood(agent, AgentSettings.NeighbourhoodRange);
     }
 
     void OnDrawGizmos()
@@ -87,5 +81,4 @@ public class Playground : Monotone<Playground>
 
     List<Agent> _agents;
 
-    RegionQT<Agent> _qt;
 }

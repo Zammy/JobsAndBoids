@@ -61,3 +61,6 @@ crashlytics-build.properties
 #vscode
 .vsconfig
 .vscode/*
+
+#Unity extras
+UserSettings/
