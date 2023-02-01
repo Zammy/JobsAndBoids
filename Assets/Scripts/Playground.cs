@@ -73,12 +73,27 @@ public class Playground : Monotone<Playground>
         Gizmos.DrawWireCube(transform.position, new Vector3(Size.x * 2, 0.01f, Size.y * 2));
     }
 
-    readonly Rect _labelRect = new Rect(12, 12, 200, 100);
     void OnGUI()
     {
         GUI.Label(_labelRect, $"Agents:{_agents.Count} - Frame:{Time.deltaTime * 1000f:0.00}ms");
+
+        GUI.BeginGroup(_groupRect);
+        GUILayout.BeginVertical();
+        _toSpawn = GUILayout.TextField(_toSpawn);
+        if (GUILayout.Button("Add Agents"))
+        {
+            if (!string.IsNullOrEmpty(_toSpawn))
+            {
+                SpawnNum = int.Parse(_toSpawn);
+                GenerateAgents();
+            }
+        }
+        GUILayout.EndVertical();
+        GUI.EndGroup();
     }
+    readonly Rect _labelRect = new Rect(12, 12, 200, 100);
+    readonly Rect _groupRect = new Rect(12, 40, 150, 500);
+    string _toSpawn = "100";
 
     List<Agent> _agents;
-
 }
