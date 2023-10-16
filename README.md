@@ -4,7 +4,7 @@ A sample project demonstrating Unity's Jobs system for GGJ Plovdiv 2023
 
 ## About sample
 
-A simple boid simulation is impelmented with simple game objects and Unit's Jobs system.
+A simple boid simulation is impelmented with simple game objects and Unity's Jobs system.
 
 Branches:
 * `main` - game object implementation
